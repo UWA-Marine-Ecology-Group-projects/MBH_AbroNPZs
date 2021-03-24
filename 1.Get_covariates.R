@@ -2,6 +2,7 @@ library(raster)
 library(rgdal)
 library(sp)
 library(ggplot2)
+library(pals)
 
 
 w.dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
@@ -22,10 +23,16 @@ head(ab)
 # separate polys of NPZ ----
 swabrnpz06 <- ab[ab$POLYGONID=="swabrnpz06",]
 #plot(swabrnpz06)
+writeOGR(swabrnpz06, s.dir, "Ab_NPZ06", driver = "ESRI Shapefile")
 
 swabrnpz09 <- ab[ab$POLYGONID=="swabrnpz09",]
 #plot(swabrnpz09, add=T)
+writeOGR(swabrnpz09, s.dir, "Ab_NPZ09", driver = "ESRI Shapefile")
 
+npzs <- raster::union(swabrnpz06, swabrnpz09)
+plot(npzs)
+
+writeOGR(npzs, s.dir, "Ab_NPZs", driver = "ESRI Shapefile")
 
 # Bathy 06 ----
 e <- drawExtent()
@@ -92,3 +99,53 @@ ggplot(data=r_df) +
   xlab("Longitude") + ylab("Latitude")
 
 plot(b09)
+
+
+### Calculate slope, aspect, tpi ----
+
+# NPZ 06
+slope06 <- terrain(b06, 'slope')
+plot(slope06)
+
+aspect06 <- terrain(b06, 'aspect', unit = 'degrees')
+plot(aspect06, col=rainbow(100))
+
+tpi06 <- terrain(b06, 'TPI')
+plot(tp106)
+
+depth06 <- b06
+
+ders6 <- stack(depth06, slope06, tpi06, aspect06)
+names(ders6) <- c("depth09", "slope09", "tpi09", "aspect09")
+
+writeRaster(ders6, paste(r.dir, "Ab_NPZ06_ders.tif", sep ='/'), overwrite = TRUE)
+
+
+
+# NPZ 09
+slope09 <- terrain(b09, 'slope')
+plot(s09)
+
+aspect09 <- terrain(b09, 'aspect', unit = 'degrees')
+plot(aspect09, col=rainbow(100))
+
+tpi09 <- terrain(b09, 'TPI')
+plot(tpi09)
+
+depth09 <- b09
+
+ders9 <- stack(depth09, slope09, tpi09, aspect09)
+names(ders9) <- c("depth09", "slope09", "tpi09", "aspect09")
+
+writeRaster(ders9, paste(r.dir, "Ab_NPZ09_ders.tif", sep ='/'), overwrite = TRUE)
+
+plot(depth06)
+plot(depth09, add=T)
+
+origin(depth06)
+origin(depth09)
+
+both.ders <- raster::merge(ders6, ders9)
+plot(both.ders)
+names(both.ders) <- c("depth", "slope", "tpi", "aspect")
+writeRaster(both.ders, paste(r.dir, "Ab_NPZs_ders.tif", sep ='/'), overwrite = TRUE)
