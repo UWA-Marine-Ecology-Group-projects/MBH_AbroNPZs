@@ -67,9 +67,9 @@ ABDat <- cbind( ABDat, tmp5[,3])
 colnames( ABDat) <- c("x", "y", "BATHY", "SLOPE", "TPI", "ASPECT")
 
 # save data as RDS ----
-saveRDS( ABDat, paste(d.dir, "ABData_forNPZ6.RDS", sep ='/'))
-saveRDS( ab_rasters, paste(d.dir, "ABRasters_forNPZ6.RDS", sep='/'))
-saveRDS( npz6,  paste(d.dir, "ABZones_forNPZ6.RDS", sep='/'))
+# saveRDS( ABDat, paste(d.dir, "ABData_forNPZ6.RDS", sep ='/'))
+# saveRDS( ab_rasters, paste(d.dir, "ABRasters_forNPZ6.RDS", sep='/'))
+# saveRDS( npz6,  paste(d.dir, "ABZones_forNPZ6.RDS", sep='/'))
 
 # Read in data ----
 ABDat <- readRDS(paste(d.dir, "ABData_forNPZ6.RDS", sep='/'))
@@ -82,13 +82,13 @@ plot(zones)
 # Get stata based on slope ----
 
 Bathy.quant <- c(0,0.5,0.85,0.95,1)
-Bathy.cuts <- quantile( ab_rasters$slope, Bathy.quant)#c( -Inf,0.02,0.04,0.08,0.16,Inf)
+Bathy.cuts <- raster::quantile(ab_rasters$slope, Bathy.cuts)#c( -Inf,0.02,0.04,0.08,0.16,Inf)
 Bathy.cuts
 #trying to make it so there is no hand-picking (except for the hand-picked function)
 tmp <- cumsum( Bathy.quant)
 
 # Raster of strata ----
-catB <- cut(ab_rasters$slope, breaks=Bathy.cuts, na.rm=TRUE)
+catB <- cut(ab_rasters$slope, breaks=Bathy.quant, na.rm=TRUE)
 plot(catB)
 plot(zones, add=T)
 
