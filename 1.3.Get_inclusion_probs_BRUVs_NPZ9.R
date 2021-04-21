@@ -21,7 +21,7 @@ r.dir <- paste(w.dir, "rasters", sep='/')
 
 
 # Read in data ----
-npz6Dat <- readRDS(paste(d.dir, "npz6Dat_forInNOutNPZ.RDS", sep='/'))
+npz9Dat <- readRDS(paste(d.dir, "npz9Dat_forInNOutNPZ.RDS", sep='/'))
 abro_rasters <- readRDS(paste(d.dir, "abro_rasters_forInNOutNPZ.RDS", sep='/'))
 zones <- readRDS(paste(d.dir, "Zones_Abro_NPZs.RDS", sep='/'))
 
@@ -33,13 +33,13 @@ total.no.deployments <- "50_deployments"
 straw.nums <- c(37, 13)  # numbers of drops in and out
 straw.props <- straw.nums / sum( straw.nums) # 0.75 0.25
 names( straw.nums) <- names( straw.props) <- c("npz6", "out6")
-saveRDS( straw.nums, file=paste(d.dir, paste("StrawmanNumbers_zones06", total.no.deployments, "RDS", sep='.'), sep='/'))
+saveRDS( straw.nums, file=paste(d.dir, paste("StrawmanNumbers_zones09", total.no.deployments, "RDS", sep='.'), sep='/'))
 
 
 # Get slope cut points ----
 # and their numbers of drops
 slope.quant <- c(0,0.5,0.9,0.98,1)
-slope.cuts <- quantile(abro_rasters$slope6, slope.quant)#c( -Inf,0.02,0.04,0.08,0.16,Inf)
+slope.cuts <- quantile(abro_rasters$slope9, slope.quant)#c( -Inf,0.02,0.04,0.08,0.16,Inf)
 slope.cuts
 #trying to make it so there is no hand-picking (except for the hand-picked function)
 tmp <- cumsum( slope.quant)
@@ -50,23 +50,23 @@ slope.targetProps <-  slope.targetNums / sum( slope.targetNums) # 0.5 0.5
 
 
 # Proportion of potential sites in each zone ----
-npz6_small <- npz6Dat[!is.na( npz6Dat$slope),]
-tmp <- colSums( npz6_small[,c("npz6", "out6")], na.rm=TRUE) # number of cells in npz and out
+npz9_small <- npz9Dat[!is.na( npz9Dat$slope),]
+tmp <- colSums( npz9_small[,c("npz6", "out6")], na.rm=TRUE) # number of cells in npz and out
 #tmp[2] <- tmp[2] - tmp[1] # so similar amount of sites in SPZ and MUZ
 tmp[1] # 7495
 tmp[2] # 2676 
-props <- tmp / nrow( npz6_small) # inside 0.7222222 - outside 0.2777778
+props <- tmp / nrow( npz9_small) # inside 0.7222222 - outside 0.2777778
 props <- props / sum( props) # inside 0.7222222 - outside 0.2777778  
 
 
 
 # To get cut points ----
-catB <- cut( abro_rasters$slope6, breaks=slope.cuts, na.rm=TRUE)
+catB <- cut( abro_rasters$slope9, breaks=slope.cuts, na.rm=TRUE)
 plot(catB)
-plot( zones$npz6, add=T); plot( catB, add=TRUE); plot( zones$out6, add=TRUE)
+plot( zones$npz9, add=T); plot( catB, add=TRUE); plot( zones$out9, add=TRUE)
 
 
-writeRaster(catB, paste(r.dir, 'slope_cuts_zone6.tif', sep='/'), overwrite=TRUE)
+#writeRaster(catB, paste(r.dir, 'slope_cuts_zone9.tif', sep='/'), overwrite=TRUE)
 
 
 
@@ -74,7 +74,7 @@ writeRaster(catB, paste(r.dir, 'slope_cuts_zone6.tif', sep='/'), overwrite=TRUE)
 # Weight according to straw.props 
 
 inclProbs <- catB
-for( zz in c( "npz6", "out6")){
+for( zz in c( "npz9", "out9")){
   print( zz)
   #if( zz == "MUZ")
   #zoneID <- extract( x=catB, y=zones$MUZ, cellnumbers=TRUE)
@@ -96,8 +96,8 @@ plot( inclProbs)
 
 
 # Standardising so that the zone totals are correct according to straw.props | straw.nums ----
-cells.npz6 <- extract( x=catB, y=zones$npz6, cellnumbers=TRUE)
-cells.out6 <- extract( x=catB, y=zones$out6, cellnumbers=TRUE)
+cells.npz6 <- extract( x=catB, y=zones$npz9, cellnumbers=TRUE)
+cells.out6 <- extract( x=catB, y=zones$out9, cellnumbers=TRUE)
 
 
 inclProbs@data@values[cells.npz6[[1]][,'cell']] <- inclProbs@data@values[cells.npz6[[1]][,'cell']] * straw.props["npz6"]
@@ -109,4 +109,4 @@ inclProbs@data@values[cells.out6[[1]][,'cell']] <- inclProbs@data@values[cells.o
 plot(inclProbs)
 
 
-writeRaster( inclProbs, paste(r.dir, paste('inclProbs_zone6', total.no.deployments, 'tif', sep ='.'), sep='/'), overwrite=TRUE)
+writeRaster( inclProbs, paste(r.dir, paste('inclProbs_zone9', total.no.deployments, 'tif', sep ='.'), sep='/'), overwrite=TRUE)
