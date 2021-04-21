@@ -1,9 +1,6 @@
 ###   ###   ###   MBH design clustered BRUVs    ###   ###   ###
 
 
-# clear environment ----
-rm(list = ls())
-
 # libraries ----
 #install.packages("MBHdesign")
 library( MBHdesign)
@@ -17,6 +14,10 @@ library( rgdal)
 library( sp)
 library( rgeos)
 
+
+# clear environment ----
+rm(list = ls())
+
 # Directories ----
 w.dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
 #w.dir <- "~/MBH_AbroNPZs"
@@ -29,7 +30,9 @@ o.dir <- paste(w.dir, "outputs", sep='/')
 ####    NPZ 6   ####
 
 # Read in the inclusion probs ----
-inclProbs <- raster(paste(r.dir, "inclProbs_zone9.50_deployments.tif", sep='/'))
+slope.cuts <- raster(paste(r.dir, "slope_cuts_zone9_v2.tif", sep='/'))
+plot(slope.cuts)
+inclProbs <- raster(paste(r.dir, "inclProbs_zone9.32_deployments.v2.tif", sep='/'))
 plot(inclProbs)
 inclProbs <- setValues( inclProbs, values( inclProbs) / sum( values( inclProbs), na.rm=TRUE))
 plot(inclProbs)
@@ -52,74 +55,10 @@ rast <- readRDS(paste(d.dir, "abro_rasters_forInNOutNPZ.RDS", sep='/'))
 #if( class( BRUVS) != "SpatialPointsDataFrame")
 #Deans <- SpatialPointsDataFrame( coords=Deans[,c("Longitude","Latitude")], data=Deans, proj4string = CRS( proj4string( zones[[1]])))
 #proj4string(Deans) <- proj4string(swrast$bathy)
-straw.nums <- readRDS(paste(d.dir, "StrawmanNumbers_zones09.50_deployments.RDS", sep ='/'))
+straw.nums <- readRDS(paste(d.dir, "StrawmanNumbers_zones09.32_deployments.RDS", sep ='/'))
 names(straw.nums) <- c("npz9" , "out9")
 names(straw.nums)
-
-################################
-
-###   ###   Part where legacy sites are added     ###     ###
-
-####  choose reference sites
-####  This is a one-step sample and hence
-####  uses orignal inclProbs
-################################
-
-# working out density dependent probs of inclusion
-# tmpD <- spTransform( Deans, CRS="+init=epsg:3577")
-# tmpDist <- as.matrix( dist( coordinates( tmpD)))
-# tmpDist1 <- apply( tmpDist, 1, function(x) sum( x<1000))
-# Deans@data$sampleProbs <- 1 / sqrt( tmpDist1)  #to alter the importance a little bit
-# Deans@data$sampleProbs <- Deans@data$sampleProbs / sum( Deans@data$sampleProbs, na.rm=TRUE)
-# Deans@data$inclProbs <- raster::extract(inclProbs, Deans)
-# Deans@data$sampleProbs <- Deans@data$sampleProbs * Deans@data$inclProbs #TPI inclusion probs are zero in most places
-
-# numRef <- rep( NA, 2)
-# names( numRef) <- c("InsideMP","OutsideMP")
-# 
-# for( zz in c( "InsideMP","OutsideMP")){
-#   myZone <- zones[[zz]]
-#   #if( zz == "MUS")
-#   #myZone = zones$AMP - zones$IUCN2
-#   tmpDrop <- as.vector( as.matrix( over( Deans, myZone)))
-#   length1 <- length(tmpDrop)
-#   wna <- which(is.na(tmpDrop))
-#   lengthna <- length(wna)
-#   length2 <- length1-lengthna
-#   numRef[zz] <- min( floor( straw.nums[zz]/2), length2)
-#   #numRef[zz] <- min( floor( straw.nums[zz]), length2)
-#   #numRef[zz] <- min( floor( straw.nums[zz]/2), sum( length2, na.rm=TRUE))
-#   prob <- Deans@data[!is.na( tmpDrop),"sampleProbs"]
-#   prob <- na.exclude(prob)
-#   prob <- as.vector(prob)
-#   length3 <- length(prob)
-#   
-#   Deans@data[!is.na( tmpDrop), "sampleProbs"][sample.int(length3, numRef[zz], prob, replace=TRUE)] <- TRUE
-#   #Deans@data[!is.na( tmpDrop), "f"][sample.int(length3, numRef[zz], prob, replace=FALSE)] <- TRUE
-#   
-#   #Deans@data[!is.na( tmpDrop), "f"][sample.int(length2, numRef[zz], prob=Deans@data[!is.na( tmpDrop),"sampleProbs"], replace=FALSE)] <- TRUE
-#   #Deans@data[!is.na( tmpDrop), "f"][sample.int( sum( tmpDrop, na.rm=TRUE), numRef[zz], replace=FALSE)] <- TRUE
-# }
-# 
-# Deans@data$sampleProbs
-# 
-# # load legacy sites ----
-# #legacySites <- readOGR(dsn="C:/Users/00093391/Dropbox/UWA/Research Associate/MBHpackage/Ningaloo19_Data/legacySites_2019-12-23.shp")
-# 
-# # Deans Points are trated as legacy sites --
-# Deans2 <- Deans
-# table( Deans@data$f) / table( Deans2@data$f)
-# 
-# plot( inclProbs)
-# plot( Deans, pch=20, col ='red', add=TRUE)
-# #points( coordinates( Deans)[Deans@data$f,], col='red')
-# 
-# #legacySites <- Deans@data[Deans@data$f,]
-# #legacySites <- SpatialPointsDataFrame( coords=legacySites[,c("Longitude","Latitude")], data=legacySites, proj4string=CRS(proj4string(inclProbs)))
-# 
-# legacySites <- Deans # 35 legacy sites
-
-
+straw.nums
 
 
 ############################
@@ -148,7 +87,7 @@ for( zz in c("npz9", "out9")){
   # myZone = zones$AMP - zones$IUCN2
   #set.seed( 747)
   #}
-  #tmpIP <- mask( rootInclProbs_agg_100m, myZone)
+  #tmpIP <- mask( rootInclProbs, myZone)
   tmpIP <- mask( inclProbs, myZone)
   tmpIP <- crop( tmpIP, myZone)
   #take the sample of clusters based on root incl probs
@@ -176,6 +115,7 @@ newSites <- SpatialPointsDataFrame( coords=newSites[,c("x","y")], data=newSites,
 
 # Plot --
 plot(inclProbs)
+plot(slope.cuts)
 plot(rast$slope9, main = "Slope")
 plot(zones$Both9, add=T)
 plot(newSites, col=newSites$zone, pch = 20, add=T) # 41
@@ -202,7 +142,7 @@ max(dist1)
 min(dist1[dist1 > 0]) # minimum distance other than 0
 
 ## p1 ----
-p1_matrix <- gWithinDistance(p1u, dist = 50, byid = TRUE)
+p1_matrix <- gWithinDistance(p1u, dist = 400, byid = TRUE)
 diag(p1_matrix) <- NA
 p1_matrix
 
@@ -228,8 +168,9 @@ remaining.sites$zone
 ## Save --
 site <- "Abrolhos"
 NPZ <- "npz9"
-design <- "50boss"
+design <- "32Bruvs"
+version <- "v2"
 
-writeOGR(remaining.sites, o.dir, paste(site, NPZ, design, sep='-'), driver = "ESRI Shapefile")
+writeOGR(remaining.sites, o.dir, paste(site, NPZ, design, version, sep='-'), driver = "ESRI Shapefile", overwrite = T)
 
 

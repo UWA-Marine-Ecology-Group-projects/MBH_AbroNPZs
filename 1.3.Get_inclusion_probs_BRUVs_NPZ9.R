@@ -2,14 +2,14 @@
 
 ####   NPZ 6   ####
 
-# clear environment ----
-rm(list = ls())
-
 
 # libraries ----
 library( rgdal)
 library( sp)
 library( raster)
+
+# clear environment ----
+rm(list = ls())
 
 # Directories ----
 w.dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
@@ -28,9 +28,11 @@ zones <- readRDS(paste(d.dir, "Zones_Abro_NPZs.RDS", sep='/'))
 
 # Straw man for numbers of samples in each region ----
 
-total.no.deployments <- "50_deployments"
+total.no.deployments <- "32_deployments"
 
-straw.nums <- c(37, 13)  # numbers of drops in and out
+design.version <- "v2"
+
+straw.nums <- c(24, 8)  # numbers of drops in and out
 straw.props <- straw.nums / sum( straw.nums) # 0.75 0.25
 names( straw.nums) <- names( straw.props) <- c("npz6", "out6")
 saveRDS( straw.nums, file=paste(d.dir, paste("StrawmanNumbers_zones09", total.no.deployments, "RDS", sep='.'), sep='/'))
@@ -38,7 +40,8 @@ saveRDS( straw.nums, file=paste(d.dir, paste("StrawmanNumbers_zones09", total.no
 
 # Get slope cut points ----
 # and their numbers of drops
-slope.quant <- c(0,0.5,0.9,0.98,1)
+#slope.quant <- c(0,0.5,0.9,0.98,1) # version 1
+slope.quant <- c(0,0.1,0.5,0.95,1) # version 2
 slope.cuts <- quantile(abro_rasters$slope9, slope.quant)#c( -Inf,0.02,0.04,0.08,0.16,Inf)
 slope.cuts
 #trying to make it so there is no hand-picking (except for the hand-picked function)
@@ -66,7 +69,7 @@ plot(catB)
 plot( zones$npz9, add=T); plot( catB, add=TRUE); plot( zones$out9, add=TRUE)
 
 
-#writeRaster(catB, paste(r.dir, 'slope_cuts_zone9.tif', sep='/'), overwrite=TRUE)
+#writeRaster(catB, paste(r.dir, 'slope_cuts_zone9_v2.tif', sep='/'), overwrite=TRUE)
 
 
 
@@ -109,4 +112,4 @@ inclProbs@data@values[cells.out6[[1]][,'cell']] <- inclProbs@data@values[cells.o
 plot(inclProbs)
 
 
-writeRaster( inclProbs, paste(r.dir, paste('inclProbs_zone9', total.no.deployments, 'tif', sep ='.'), sep='/'), overwrite=TRUE)
+writeRaster( inclProbs, paste(r.dir, paste('inclProbs_zone9', total.no.deployments, design.version, 'tif', sep ='.'), sep='/'), overwrite=TRUE)
