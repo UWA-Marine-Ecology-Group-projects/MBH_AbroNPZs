@@ -63,6 +63,7 @@ saveRDS(zones, file= paste(d.dir, "Zones_Abro_NPZs.RDS", sep='/'))
 ## Read raster data ----
 ders06 <- stack(paste(r.dir, "Ab_NPZ06_ders.tif", sep ='/'))
 plot(ders06)
+names(ders06) <- c("depth", "slope", "tpi", "aspect")
 b6 <- ders06$depth
 s6 <- ders06$slope
 ders09 <- stack(paste(r.dir, "Ab_NPZ09_ders.tif", sep ='/'))

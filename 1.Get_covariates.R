@@ -186,7 +186,7 @@ plot(tpi06)
 depth06 <- b.zone6
 
 ders6 <- stack(depth06, slope06, tpi06, aspect06)
-names(ders6) <- c("depth09", "slope09", "tpi09", "aspect09")
+names(ders6) <- c("depth06", "slope06", "tpi06", "aspect06")
 
 writeRaster(ders6, paste(r.dir, "Ab_NPZ06_ders.tif", sep ='/'), overwrite = TRUE)
 
