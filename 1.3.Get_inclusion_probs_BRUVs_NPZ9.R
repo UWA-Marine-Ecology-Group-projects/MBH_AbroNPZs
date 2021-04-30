@@ -113,3 +113,39 @@ plot(inclProbs)
 
 
 writeRaster( inclProbs, paste(r.dir, paste('inclProbs_zone9', total.no.deployments, design.version, 'tif', sep ='.'), sep='/'), overwrite=TRUE)
+
+
+#### Alter inclusion probabilities for legacy sites ----
+library(MBHdesign)
+
+# Read inclusion probabilities ----
+inclProbs <- raster(paste(r.dir, "inclProbs_zone9.50_deployments.v2.tif", sep='/'))
+plot(inclProbs)
+
+# Read legacy sites ----
+legacy <- readOGR(paste(s.dir, "Legacy_sites.shp", sep='/'))
+proj4string(legacy)
+plot(legacy, add=T)
+
+legacys <- as.data.frame(legacy)
+legacyss <- legacys[,c(6,7)]
+
+pot.sites <- as.data.frame(inclProbs, xy = TRUE)
+head(pot.sites)
+
+ip <- pot.sites[,3]
+pot.sitess <- pot.sites[,c(1,2)]
+
+# alter inclProbs ----
+altInclProbs <- alterInclProbs(legacy.sites = legacyss, 
+                               #potential.sites = pot.sitess, 
+                               inclusion.probs = ip)
+plot(altInclProbs)
+
+#visualise
+image( x=unique( pot.sitess[,1]), y=unique( pot.sitess[,2]),
+       z=matrix( altInclProbs, nrow=sqrt(nrow(pot.sitess)), ncol=sqrt(nrow( pot.sitess))),
+       main="Adjusted Inclusion Probabilities",
+       ylab=colnames( pot.sitess)[2], xlab=colnames( pot.sitess)[1])
+
+test <- as.data.frame(altInclProbs)
