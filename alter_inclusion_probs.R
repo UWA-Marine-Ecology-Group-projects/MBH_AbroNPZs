@@ -38,6 +38,7 @@ inclProbs <- raster(paste(r.dir, "inclProbs_zone9.50_deployments.v2.tif", sep='/
 plot(inclProbs)
 
 
+
 # potential sites ----
 pot.sites <- as.data.frame(inclProbs, xy = TRUE)
 class(pot.sitess)
