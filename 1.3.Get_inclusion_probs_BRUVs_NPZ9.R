@@ -7,6 +7,7 @@
 library( rgdal)
 library( sp)
 library( raster)
+library(dplyr)
 
 # clear environment ----
 rm(list = ls())
@@ -129,17 +130,28 @@ plot(legacy, add=T)
 
 legacys <- as.data.frame(legacy)
 legacyss <- legacys[,c(6,7)]
+# in ascending longitude
+legacyss <- arrange(legacyss, coords.x1)
+names(legacyss) <- c("x", "y")
+legacy.test <- legacyss[1,]
 
 pot.sites <- as.data.frame(inclProbs, xy = TRUE)
 head(pot.sites)
+class(pot.sitess)
 
 ip <- pot.sites[,3]
 pot.sitess <- pot.sites[,c(1,2)]
+class(pot.sitess)
+head(pot.sitess)
+
+class(ip)
+
 
 # alter inclProbs ----
 altInclProbs <- alterInclProbs(legacy.sites = legacyss, 
-                               #potential.sites = pot.sitess, 
-                               inclusion.probs = ip)
+                               potential.sites = pot.sitess, 
+                               inclusion.probs = inclProbs,
+                               mc.cores = 6)
 plot(altInclProbs)
 
 #visualise
