@@ -116,64 +116,7 @@ plot(inclProbs)
 writeRaster( inclProbs, paste(r.dir, paste('inclProbs_zone9', total.no.deployments, design.version, 'tif', sep ='.'), sep='/'), overwrite=TRUE)
 
 
-###     ###     ###     ###     ###
-
-#### Alter inclusion probabilities for legacy sites ----
-library(MBHdesign)
-
-# Read inclusion probabilities ----
-inclProbs <- raster(paste(r.dir, "inclProbs_zone9.50_deployments.v2.tif", sep='/'))
-plot(inclProbs)
-
-# Read legacy sites ----
-legacy <- readOGR(paste(s.dir, "Legacy_sites.shp", sep='/'))
-proj4string(legacy)
-plot(legacy, pch=20, add=T)
-
-legacys <- as.data.frame(legacy)
-legacyss <- legacys[,c(6,7)]
-# in ascending longitude
-legacyss <- arrange(legacyss, coords.x1)
-names(legacyss) <- c("x", "y")
-legacy.test <- legacyss[1,]
-
-pot.sites <- as.data.frame(inclProbs, xy = TRUE)
-head(pot.sites)
-class(pot.sitess)
-str(pot.sitess)
-
-ip <- pot.sites[,3]
-pot.sitess <- pot.sites[,c(1,2)]
-class(pot.sitess)
-head(pot.sitess)
-str(ip)
-class(ip)
-
-ip <- as.data.frame(pot.sites[,3])
 
 
-# alter inclProbs test1----
-altInclProbs <- alterInclProbs(legacy.sites = legacyss, 
-                               potential.sites = pot.sitess,
-                               #n = 40,
-                               inclusion.probs = ip,
-                               mc.cores = 6)
-
-# alter inclProbs test2----
-lega <- as.matrix(legacyss)
-ps <- as.matrix(pot.sitess)
-altInclProbs <- alterInclProbs(legacy.sites = lega, 
-                               potential.sites = ps, 
-                               inclusion.probs = ip,
-                               mc.cores = 6)
 
 
-plot(altInclProbs)
-
-#visualise
-image( x=unique( pot.sitess[,1]), y=unique( pot.sitess[,2]),
-       z=matrix( altInclProbs, nrow=sqrt(nrow(pot.sitess)), ncol=sqrt(nrow( pot.sitess))),
-       main="Adjusted Inclusion Probabilities",
-       ylab=colnames( pot.sitess)[2], xlab=colnames( pot.sitess)[1])
-
-test <- as.data.frame(altInclProbs)
