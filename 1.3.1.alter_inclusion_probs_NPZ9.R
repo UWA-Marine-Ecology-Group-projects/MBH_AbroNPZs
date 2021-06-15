@@ -21,7 +21,7 @@ s.dir <- paste(w.dir, "shapefiles", sep='/')
 r.dir <- paste(w.dir, "rasters", sep='/')
 
 # Information for files ---
-total.no.deployments <- "50_deployments"
+total.no.deployments <- "40_deployments"
 
 design.version <- "v3"
 
@@ -110,3 +110,20 @@ coordinates(aIP) <- ~x+y
 gridded(aIP) <- TRUE
 altIncProbs <- raster(aIP)
 plot(altIncProbs)
+
+
+# Make sure incl Probs = n ----
+plot(altIncProbs)
+cellStats(altIncProbs, 'sum')
+
+altIncProbs<- altIncProbs/100 # first to 1
+cellStats(altIncProbs, 'sum')
+
+## Make sure alt inc probs add up to n = 50 --
+altIncProbs <- setValues(altIncProbs, values(altIncProbs)*50)
+cellStats(altIncProbs, 'sum')
+
+
+writeRaster( altIncProbs, paste(d.dir, paste('altered_incProb_zone9', total.no.deployments, design.version, 'tif', sep ='.'), sep='/'), overwrite=TRUE)
+
+

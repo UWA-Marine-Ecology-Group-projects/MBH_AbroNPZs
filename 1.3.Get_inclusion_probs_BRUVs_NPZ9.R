@@ -112,10 +112,19 @@ inclProbs@data@values[cells.out6[[1]][,'cell']] <- inclProbs@data@values[cells.o
 
 plot(inclProbs)
 
+# Make sure incl probs add up to n ----
+
+cellStats(inclProbs , 'sum')
+
+#inclProbs <- inclProbs /100 # first to 1
+#cellStats(inclProbs , 'sum')
+
+## Make sure alt inc probs add up to n  --
+inclProbs <- setValues(inclProbs, values(inclProbs)*32)
+cellStats(inclProbs, 'sum')
+
 
 writeRaster( inclProbs, paste(r.dir, paste('inclProbs_zone9', total.no.deployments, design.version, 'tif', sep ='.'), sep='/'), overwrite=TRUE)
-
-
 
 
 
